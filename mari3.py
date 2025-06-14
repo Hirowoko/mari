@@ -1,6 +1,7 @@
 import os
 import discord
 from discord.ext import commands
+import asyncio
 counter_ban_up = -1
 counter_ban_down = -1
 with open('/home/hiwo/discord_token', 'r') as data:
@@ -14,24 +15,24 @@ bot = commands.Bot(command_prefix='$', intents=intents)
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}!')
-#@bot.event 
-#async def on_reaction_rem(reaction_rem, user):
-#       
-@bot.event
-async def on_reaction_add(reaction, user):
-    counter_up = 1
-    counter_down = 1
-    print(f"{reaction} from {user}")
-    print(int(reaction))
-    pass
 
 @bot.command()
-async def poll(ctx, user_id,*, question):
-    await ctx.channel.purge(limit=1)
-    message = await ctx.send(f"{question} - {user_id}: \n✅ = Yes\n❎ = No")
-    await message.add_reaction('✅')
-    await message.add_reaction('❎')
+async def poll(ctx, user_id, *, question):
+    mess = await ctx.send(f"{question} - {user_id}: \n✅ = Yes\n❎ = No")
+    await mess.add_reaction('✅')
+    await mess.add_reaction('❎')
+    await asyncio.sleep(5)
+
+    msg = await ctx.channel.fetch_message(mess.id) # 'Cache' the message
+    highest_reaction = ""
+    highest_reaction_number = 1
     
+    for reaction in msg.reactions: # iterate through every reaction in the message
+        if (reaction.count-1) >= highest_reaction_number:
+            highest_reaction = reaction.emoji
+            highest_reaction_count = reaction.count-1
+            await ctx.send(f"the person would be banned now")
+
 
 @bot.command()
 async def you(ctx):
