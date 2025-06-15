@@ -1,35 +1,43 @@
-# This example requires the 'message_content' intent.
 import os
 import discord
 from discord.ext import commands
+import asyncio
+global total_member_count
+
 with open('/home/hiwo/discord_token', 'r') as data:
-    contents = data.read()
+    token = data.read().strip()
 
-    
-
-
-class MyClient(discord.Client):
-    async def on_ready(self):
-        print(f'Logged on as {self.user}!')
-
-open ('/home/hiwo/discord_token')
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = MyClient(intents=intents)
-client.run(contents)
-
 bot = commands.Bot(command_prefix='$', intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user}!')
+
 @bot.command()
-async def test(ctx, arg):
-    await ctx.send(arg)
+async def ban(ctx, user_id, *, question):
+    mess = await ctx.send(f"{question} - {user_id}: \n✅ = Yes\n❎ = No")
+    await mess.add_reaction('✅')
+    await mess.add_reaction('❎')
+    await asyncio.sleep(5)
+    member_count = len([m for m in ctx.guild.members if not m.bot])
+    print(member_count)
+
+    msg = await ctx.channel.fetch_message(mess.id) # 'Cache' the message
+    highest_reaction = ""
+    highest_reaction_number = 1
+    
+    for reaction in msg.reactions: # iterate through every reaction in the message
+        if (reaction.count-3) >= highest_reaction_number:
+            highest_reaction = reaction.emoji
+            highest_reaction_count = reaction.count-1
+            await ctx.send(f"the person would be banned now")
+
 
 @bot.command()
 async def you(ctx):
-    ctx.send("fucker")
-    print("it worked")
+    await ctx.send("fucker")
 
-@bot.command(name='list')
-async def _list(ctx, arg):
-    pass
-
+bot.run(token)
